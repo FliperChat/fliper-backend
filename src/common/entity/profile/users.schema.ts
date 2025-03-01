@@ -1,6 +1,8 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { HydratedDocument } from 'mongoose';
-import { Role } from '../enum';
+import { HydratedDocument, Types } from 'mongoose';
+import { Role } from '../../enum';
+import { UserInfo } from './userInfo.schema';
+import { RefreshToken } from './refreshToken.schema';
 
 export type UsersType = HydratedDocument<Users>;
 
@@ -39,6 +41,9 @@ export class Users {
   @Prop({ type: Date, required: true })
   birthDay: Date;
 
+  @Prop({ type: Date })
+  premiumExpires: Date;
+
   @Prop({ type: String, enum: Role, default: Role.USER, required: true })
   role: Role;
 
@@ -47,6 +52,19 @@ export class Users {
 
   @Prop({ type: Boolean, default: false, required: true })
   verified: boolean;
+
+  @Prop()
+  description: string;
+
+  @Prop({
+    type: [{ type: Types.ObjectId, ref: 'UserInfo', default: [] }],
+  })
+  userInfo: UserInfo[];
+
+  @Prop({
+    type: [{ type: Types.ObjectId, ref: 'RefreshToken', default: [] }],
+  })
+  refreshToken: RefreshToken[];
 }
 
 export const UsersSchema = SchemaFactory.createForClass(Users);

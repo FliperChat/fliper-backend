@@ -3,7 +3,7 @@ import { JwtService } from '@nestjs/jwt';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { SignInDTO, SignUpDTO } from 'src/common/dto/user.dto';
-import { Users } from 'src/common/entity/users.schema';
+import { Users } from 'src/common/entity/profile/users.schema';
 import * as bcrypt from 'bcrypt';
 import { isEmail } from 'class-validator';
 import * as moment from 'moment';

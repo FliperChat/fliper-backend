@@ -7,3 +7,18 @@ export interface Location {
     longitude?: number;
   };
 }
+
+export interface Device {
+  os: {
+    name: string;
+    version?: string;
+  };
+  browser: {
+    name: string;
+    major: string;
+  };
+  device: {
+    type?: string;
+    model?: string;
+  };
+}
