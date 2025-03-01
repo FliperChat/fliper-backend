@@ -2,11 +2,14 @@
   "name": "fliper-backend",
   "version": "0.0.1",
   "description": "",
-  "author": "",
+  "author": "ReveinOFF",
   "private": true,
   "license": "UNLICENSED",
   "scripts": {
     "build": "nest build",
+    "postbuildw": "xcopy /e /i /y storage dist\\storage",
+    "postbuildl": "cp -r storage dist/storage",
+    "prod": "npm run build && npm run postbuildw",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
     "start": "nest start",
     "start:dev": "nest start --watch",
@@ -21,10 +24,16 @@
   },
   "dependencies": {
     "@nestjs/common": "^11.0.1",
+    "@nestjs/config": "^4.0.0",
     "@nestjs/core": "^11.0.1",
     "@nestjs/platform-express": "^11.0.1",
+    "@nestjs/serve-static": "^5.0.3",
+    "class-transformer": "^0.5.1",
+    "class-validator": "^0.14.1",
+    "maxmind": "^4.3.24",
     "reflect-metadata": "^0.2.2",
-    "rxjs": "^7.8.1"
+    "rxjs": "^7.8.1",
+    "ua-parser-js": "^2.0.2"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3.2.0",
