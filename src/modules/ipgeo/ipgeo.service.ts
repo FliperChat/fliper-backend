@@ -2,30 +2,21 @@ import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { UAParser } from 'ua-parser-js';
 import { CityResponse, open, Reader } from 'maxmind';
 import * as path from 'path';
-
-interface Location {
-  city?: string;
-  region?: string;
-  country?: string;
-  loc?: {
-    latitude?: number;
-    longitude?: number;
-  };
-}
+import { Location } from 'src/common/types';
 
 @Injectable()
 export class IpgeoService {
   private geoDb: Reader<CityResponse> | null = null;
 
   constructor() {
-    const dbPath = path.join(
-      __dirname,
-      '..',
-      '..',
-      'storageServer',
-      'Geo.mmdb',
-    );
-    this.loadDatabase(dbPath);
+    // const dbPath = path.join(
+    //   __dirname,
+    //   '..',
+    //   '..',
+    //   'storageServer',
+    //   'Geo.mmdb',
+    // );
+    // this.loadDatabase(dbPath);
   }
 
   async loadDatabase(dbPath: string) {

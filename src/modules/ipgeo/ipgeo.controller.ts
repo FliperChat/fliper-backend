@@ -1,4 +1,4 @@
-import { Controller, Get, HttpCode, HttpStatus, Ip, Req } from '@nestjs/common';
+import { Controller, Get, HttpCode, HttpStatus, Req } from '@nestjs/common';
 import { Request } from 'express';
 import { IpgeoService } from './ipgeo.service';
 
