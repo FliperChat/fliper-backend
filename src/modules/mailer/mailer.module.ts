@@ -6,26 +6,28 @@ import { HandlebarsAdapter } from '@nestjs-modules/mailer/dist/adapters/handleba
 
 @Module({
   imports: [
-    NestMailerModule.forRoot({
-      transport: {
-        host: 'smtp.ukr.net',
-        port: 2525,
-        secure: true,
-        auth: {
-          user: 'uniwox@ukr.net',
-          pass: 'vnd1B2BZgt6chIX2',
+    NestMailerModule.forRootAsync({
+      useFactory: async () => ({
+        transport: {
+          host: process.env.MAIL_HOST,
+          port: parseInt(process.env.MAIL_PORT as string),
+          secure: true,
+          auth: {
+            user: process.env.MAIL_USER,
+            pass: process.env.MAIL_PASS,
+          },
         },
-      },
-      defaults: {
-        from: `"Fliper" <uniwox@ukr.net>`,
-      },
-      template: {
-        dir: path.join(__dirname, '..', '..', 'storage', 'pages'),
-        adapter: new HandlebarsAdapter(),
-        options: {
-          strict: true,
+        defaults: {
+          from: `"Fliper" <${process.env.MAIL_USER}>`,
         },
-      },
+        template: {
+          dir: path.join(__dirname, '..', '..', 'storage', 'pages'),
+          adapter: new HandlebarsAdapter(),
+          options: {
+            strict: true,
+          },
+        },
+      }),
     }),
   ],
   providers: [MailerService],
