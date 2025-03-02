@@ -65,6 +65,21 @@ export class Users {
     type: [{ type: Types.ObjectId, ref: 'RefreshToken', default: [] }],
   })
   refreshToken: RefreshToken[];
+
+  @Prop({
+    type: [{ type: Types.ObjectId, ref: 'Users' }],
+    default: [],
+  })
+  followers: Users[];
+
+  @Prop({
+    type: [{ type: Types.ObjectId, ref: 'Users' }],
+    default: [],
+  })
+  following: Users[];
+
+  @Prop({ type: [{ type: Types.ObjectId, ref: 'Notification' }], default: [] })
+  notifications: Notification[];
 }
 
 export const UsersSchema = SchemaFactory.createForClass(Users);
