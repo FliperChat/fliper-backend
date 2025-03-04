@@ -1,45 +1,50 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
-import { UAParser } from 'ua-parser-js';
+import { IResult, UAParser } from 'ua-parser-js';
 import { CityResponse, open, Reader } from 'maxmind';
 import * as path from 'path';
-import { Location } from 'src/common/types';
+import { Request } from 'express';
 
 @Injectable()
 export class IpgeoService {
   private geoDb: Reader<CityResponse> | null = null;
 
   constructor() {
-    // const dbPath = path.join(
-    //   __dirname,
-    //   '..',
-    //   '..',
-    //   'storageServer',
-    //   'Geo.mmdb',
-    // );
-    // this.loadDatabase(dbPath);
+    const dbPath = path.join(__dirname, '..', '..', 'storage', 'Geo.mmdb');
+    this.loadDatabase(dbPath);
   }
 
   async loadDatabase(dbPath: string) {
     try {
       this.geoDb = await open(dbPath);
-      console.log('GeoIP database loaded successfully');
     } catch (error) {
       console.error('Error loading GeoIP database:', error);
     }
   }
 
-  getDevice(userAgent: string) {
+  getIp(req: Request): string {
+    const ip =
+      req.headers['x-forwarded-for']?.toString().split(',')[0] ||
+      req.socket.remoteAddress ||
+      req.connection?.remoteAddress ||
+      req.ip;
+
+    return ip || 'x.x.x.x';
+  }
+
+  getUA(req: Request): string {
+    const ua = req.headers['user-agent'];
+
+    return ua || '';
+  }
+
+  getDevice(userAgent: string): IResult {
     userAgent = userAgent.toLowerCase();
     const parser = new UAParser(userAgent);
 
-    return {
-      browser: parser.getBrowser(),
-      device: parser.getDevice(),
-      os: parser.getOS(),
-    };
+    return parser.getResult();
   }
 
-  getLocation(ip: string): Location {
+  getLocation(ip: string): CityResponse {
     if (!this.geoDb) {
       throw new HttpException(
         'GeoIP database is not loaded',
@@ -50,17 +55,7 @@ export class IpgeoService {
     try {
       const data = this.geoDb.get(ip) as CityResponse;
 
-      return {
-        city: data?.city?.names?.en,
-        region: data?.subdivisions?.[0]?.names?.en,
-        country: data?.country?.names?.en,
-        loc: data?.location
-          ? {
-              latitude: data.location.latitude,
-              longitude: data.location.longitude,
-            }
-          : undefined,
-      };
+      return data;
     } catch (error) {
       throw new HttpException('Unable to locate', HttpStatus.NOT_FOUND);
     }

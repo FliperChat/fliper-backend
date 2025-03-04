@@ -5,7 +5,21 @@ export enum Role {
 }
 
 export enum NotificationType {
-  FOLLOW = 'FOLLOW',
-  LIKE_POST = 'LIKE_POST',
-  LIKE_VIDEO = 'LIKE_VIDEO',
+  FOLLOW = 'follow',
+  LIKE_ARTICLE = 'like_article',
+  LIKE_REEL = 'like_reel',
+}
+
+export enum ReportReasonType {
+  SPAM = 'spam',
+  ABUSE = 'abuse',
+  HateSpeech = 'hate_speech',
+  CopyrightViolation = 'CopyrightViolation',
+  OTHER = 'other',
+}
+
+export enum ReportTargetType {
+  SPAM = 'Article',
+  USER = 'User',
+  REEL = 'Reel',
 }

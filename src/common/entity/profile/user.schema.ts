@@ -3,11 +3,12 @@ import { HydratedDocument, Types } from 'mongoose';
 import { Role } from '../../enum';
 import { UserInfo } from './userInfo.schema';
 import { RefreshToken } from './refreshToken.schema';
+import { BaseEntity } from '../baseEntity.schema';
 
-export type UsersType = HydratedDocument<Users>;
+export type UserType = HydratedDocument<User>;
 
 @Schema()
-export class Users {
+export class User extends BaseEntity {
   @Prop({
     unique: true,
     required: true,
@@ -57,29 +58,29 @@ export class Users {
   description: string;
 
   @Prop({
-    type: [{ type: Types.ObjectId, ref: 'UserInfo', default: [] }],
+    type: [{ type: Types.UUID, ref: 'UserInfo', default: [] }],
   })
   userInfo: UserInfo[];
 
   @Prop({
-    type: [{ type: Types.ObjectId, ref: 'RefreshToken', default: [] }],
+    type: [{ type: Types.UUID, ref: 'RefreshToken', default: [] }],
   })
   refreshToken: RefreshToken[];
 
   @Prop({
-    type: [{ type: Types.ObjectId, ref: 'Users' }],
+    type: [{ type: Types.UUID, ref: 'User' }],
     default: [],
   })
-  followers: Users[];
+  followers: User[];
 
   @Prop({
-    type: [{ type: Types.ObjectId, ref: 'Users' }],
+    type: [{ type: Types.UUID, ref: 'User' }],
     default: [],
   })
-  following: Users[];
+  following: User[];
 
-  @Prop({ type: [{ type: Types.ObjectId, ref: 'Notification' }], default: [] })
+  @Prop({ type: [{ type: Types.UUID, ref: 'Notification' }], default: [] })
   notifications: Notification[];
 }
 
-export const UsersSchema = SchemaFactory.createForClass(Users);
+export const UserSchema = SchemaFactory.createForClass(User);

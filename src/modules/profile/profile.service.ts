@@ -3,7 +3,7 @@ import { JwtService } from '@nestjs/jwt';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { SignInDTO, SignUpDTO } from 'src/common/dto/user.dto';
-import { Users } from 'src/common/entity/profile/users.schema';
+import { User } from 'src/common/entity/profile/user.schema';
 import * as bcrypt from 'bcrypt';
 import { isEmail } from 'class-validator';
 import * as moment from 'moment';
@@ -15,7 +15,7 @@ import * as sharp from 'sharp';
 @Injectable()
 export class ProfileService {
   constructor(
-    @InjectModel(Users.name) private usersModel: Model<Users>,
+    @InjectModel(User.name) private usersModel: Model<User>,
     private readonly jwtService: JwtService,
   ) {}
 
@@ -49,7 +49,7 @@ export class ProfileService {
 
   async register(
     reg: SignUpDTO,
-  ): Promise<{ token: string; _id: Types.ObjectId; email: string }> {
+  ): Promise<{ token: string; _id: Types.UUID; email: string }> {
     const user = await this.usersModel.findOne({
       $or: [{ email: reg.email }, { login: reg.login }],
     });
@@ -90,7 +90,7 @@ export class ProfileService {
     return { token, _id: newUser._id, email: newUser.email };
   }
 
-  async updateUserImg(id: Types.ObjectId, fileName: string) {
+  async updateUserImg(id: Types.UUID, fileName: string) {
     const user = await this.usersModel.findOne({
       _id: id,
     });

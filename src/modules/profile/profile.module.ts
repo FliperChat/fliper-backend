@@ -2,7 +2,7 @@ import { Module } from '@nestjs/common';
 import { ProfileService } from './profile.service';
 import { ProfileController } from './profile.controller';
 import { MongooseModule } from '@nestjs/mongoose';
-import { Users, UsersSchema } from 'src/common/entity/profile/users.schema';
+import { User, UserSchema } from 'src/common/entity/profile/user.schema';
 import { JwtModule } from '@nestjs/jwt';
 import { MailerModule } from '../mailer/mailer.module';
 import {
@@ -17,7 +17,7 @@ import {
 @Module({
   imports: [
     MongooseModule.forFeature([
-      { name: Users.name, schema: UsersSchema },
+      { name: User.name, schema: UserSchema },
       { name: RefreshToken.name, schema: RefreshTokenSchema },
       { name: UserInfo.name, schema: UserInfoSchema },
     ]),

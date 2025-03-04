@@ -9,17 +9,13 @@ export class IpgeoController {
   @Get('track')
   @HttpCode(HttpStatus.OK)
   async getProfile(@Req() req: Request) {
-    const ip =
-      req.headers['x-forwarded-for']?.toString().split(',')[0] ||
-      req.socket.remoteAddress ||
-      req.connection?.remoteAddress ||
-      req.ip;
-    const userAgent = req.headers['user-agent'] || '';
+    const ip = this.geoService.getIp(req);
+    const userAgent = this.geoService.getUA(req);
 
     return {
       ip,
       device: this.geoService.getDevice(userAgent),
-      location: { ...this.geoService.getLocation(ip as string) },
+      location: this.geoService.getLocation(ip as string),
     };
   }
 }

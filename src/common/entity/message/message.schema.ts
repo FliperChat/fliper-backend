@@ -1,10 +1,11 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument, Types } from 'mongoose';
+import { BaseEntity } from '../baseEntity.schema';
 
 export type MessageType = HydratedDocument<Message>;
 
 @Schema()
-export class Message {
+export class Message extends BaseEntity {
   @Prop()
   content?: string;
 
@@ -14,13 +15,13 @@ export class Message {
   @Prop({ type: Date, default: Date.now, required: true })
   dateCreated: Date;
 
-  @Prop({ type: [{ type: Types.ObjectId, ref: 'Users' }], default: [] })
-  users: Types.ObjectId[];
+  @Prop({ type: [{ type: Types.UUID, ref: 'User' }], default: [] })
+  users: Types.UUID[];
 
   @Prop({
-    type: [{ type: Types.ObjectId, ref: 'MessageStorage' }],
+    type: [{ type: Types.UUID, ref: 'MessageStorage' }],
   })
-  messageStorage: Types.ObjectId;
+  messageStorage: Types.UUID;
 
   @Prop({
     default: [],

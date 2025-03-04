@@ -1,25 +1,26 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument, Types } from 'mongoose';
 import { NotificationType as NT } from 'src/common/enum';
+import { BaseEntity } from '../baseEntity.schema';
 
 export type NotificationType = HydratedDocument<Notification>;
 
 @Schema()
-export class Notification {
-  @Prop({ type: Types.ObjectId, ref: 'Users', required: true })
-  from: Types.ObjectId;
+export class Notification extends BaseEntity {
+  @Prop({ type: Types.UUID, ref: 'User', required: true })
+  from: Types.UUID;
 
-  @Prop({ type: Types.ObjectId, ref: 'Users', required: true })
-  to: Types.ObjectId;
+  @Prop({ type: Types.UUID, ref: 'User', required: true })
+  to: Types.UUID;
 
   @Prop({ type: String, enum: NT, required: true })
   type: NotificationType;
 
-  @Prop({ type: Types.ObjectId, ref: 'Post', required: false })
-  post?: Types.ObjectId;
+  @Prop({ type: Types.UUID, ref: 'Post', required: false })
+  post?: Types.UUID;
 
-  @Prop({ type: Types.ObjectId, ref: 'Reels', required: false })
-  reels?: Types.ObjectId;
+  @Prop({ type: Types.UUID, ref: 'Reel', required: false })
+  reel?: Types.UUID;
 
   @Prop({ type: Date, default: Date.now, required: false })
   createdAt: Date;
