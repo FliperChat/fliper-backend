@@ -24,6 +24,9 @@ export class User extends BaseEntity {
   })
   email: string;
 
+  @Prop({ type: Boolean, default: false, required: true })
+  emailVerified: boolean;
+
   @Prop({ required: true })
   password: string;
 

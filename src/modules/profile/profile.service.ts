@@ -2,7 +2,7 @@ import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
-import { SignInDTO, SignUpDTO } from 'src/common/dto/user.dto';
+import { M_ProfileDTO, SignInDTO, SignUpDTO } from 'src/common/dto/user.dto';
 import { User } from 'src/common/entity/profile/user.schema';
 import * as bcrypt from 'bcrypt';
 import { isEmail } from 'class-validator';
@@ -11,22 +11,27 @@ import * as path from 'path';
 import { v4 as uuidv4 } from 'uuid';
 import * as fs from 'fs';
 import * as sharp from 'sharp';
+import { Request } from 'express';
+import { ITokenData } from 'src/common/types';
+import { Cache } from 'cache-manager';
+import { plainToClass } from 'class-transformer';
 
 @Injectable()
 export class ProfileService {
   constructor(
     @InjectModel(User.name) private usersModel: Model<User>,
     private readonly jwtService: JwtService,
+    private cacheManager: Cache,
   ) {}
 
   async login(auth: SignInDTO): Promise<string> {
     const { login, password } = auth;
 
     const user = isEmail(login)
-      ? await this.usersModel.findOne({ email: login })
-      : await this.usersModel.findOne({ login });
+      ? await this.usersModel.findOne({ email: login }).exec()
+      : await this.usersModel.findOne({ login }).exec();
 
-    if (!user) {
+    if (!user || !user.emailVerified) {
       throw new HttpException('User not found', HttpStatus.NOT_FOUND);
     }
 
@@ -50,15 +55,19 @@ export class ProfileService {
   async register(
     reg: SignUpDTO,
   ): Promise<{ token: string; _id: Types.UUID; email: string }> {
-    const user = await this.usersModel.findOne({
-      $or: [{ email: reg.email }, { login: reg.login }],
-    });
+    const user = await this.usersModel
+      .findOne({
+        $or: [{ email: reg.email }, { login: reg.login }],
+      })
+      .exec();
 
     if (user) {
-      throw new HttpException(
-        'E-mail or login is already taken',
-        HttpStatus.NOT_ACCEPTABLE,
-      );
+      if (!user.emailVerified) await this.deleteProfile(user._id);
+      else
+        throw new HttpException(
+          'E-mail or login is already taken',
+          HttpStatus.NOT_ACCEPTABLE,
+        );
     }
 
     const birthDate = moment(reg.birthDay, 'YYYY-MM-DD');
@@ -71,7 +80,7 @@ export class ProfileService {
       );
     }
 
-    const hashPassword = await bcrypt.hash(reg.password, 3);
+    const hashPassword = await bcrypt.hash(reg.password, 10);
 
     const newUser = await this.usersModel.create({
       ...reg,
@@ -88,6 +97,18 @@ export class ProfileService {
     );
 
     return { token, _id: newUser._id, email: newUser.email };
+  }
+
+  async deleteProfile(id: Types.UUID): Promise<boolean> {
+    try {
+      await this.usersModel.findByIdAndDelete(id);
+      return true;
+    } catch (error) {
+      throw new HttpException(
+        'Internal server error',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
   }
 
   async updateUserImg(id: Types.UUID, fileName: string) {
@@ -129,5 +150,26 @@ export class ProfileService {
       });
 
     return newFileName;
+  }
+
+  async profile(req: Request) {
+    const tokenData = req.tokenData as ITokenData;
+
+    const cacheKey = `user_profile_${tokenData._id}`;
+    const cachedUser = await this.cacheManager.get<User>(cacheKey);
+
+    if (cachedUser) {
+      return cachedUser;
+    }
+
+    const user = await this.usersModel.findOne({ _id: tokenData._id }).exec();
+
+    if (!user) {
+      throw new HttpException('User not found', HttpStatus.NOT_FOUND);
+    }
+
+    await this.cacheManager.set(cacheKey, user, 300);
+
+    return plainToClass(M_ProfileDTO, user);
   }
 }

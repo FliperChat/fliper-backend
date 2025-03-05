@@ -5,6 +5,8 @@ import { ServeStaticModule } from '@nestjs/serve-static';
 import { ConfigModule } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
 import { ProfileModule } from './modules/profile/profile.module';
+import { APP_GUARD } from '@nestjs/core';
+import { AuthGuard } from './common/guard/auth.guard';
 
 @Module({
   imports: [
@@ -25,6 +27,11 @@ import { ProfileModule } from './modules/profile/profile.module';
     ProfileModule,
   ],
   controllers: [],
-  providers: [],
+  providers: [
+    {
+      provide: APP_GUARD,
+      useClass: AuthGuard,
+    },
+  ],
 })
 export class AppModule {}

@@ -1,16 +1,21 @@
 import {
   Body,
   Controller,
+  Get,
   HttpCode,
   HttpStatus,
   Post,
+  Req,
   UploadedFile,
+  UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
 import { ProfileService } from './profile.service';
 import { SignInDTO, SignUpDTO } from '../../common/dto/user.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { MailerService } from '../mailer/mailer.service';
+import { Request } from 'express';
+import { AuthGuard } from 'src/common/guard/auth.guard';
 
 @Controller('profile')
 export class ProfileController {
@@ -53,5 +58,12 @@ export class ProfileController {
     );
 
     return user.token;
+  }
+
+  @Get('profile')
+  @UseGuards(AuthGuard)
+  @HttpCode(HttpStatus.ACCEPTED)
+  async profile(@Req() req: Request) {
+    return await this.profileService.profile(req);
   }
 }

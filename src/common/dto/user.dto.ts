@@ -5,6 +5,7 @@ import {
   IsString,
   Length,
 } from 'class-validator';
+import { Expose } from 'class-transformer';
 
 export class SignInDTO {
   @IsNotEmpty()
@@ -42,4 +43,18 @@ export class SignUpDTO {
   @IsString()
   @Length(8, 25)
   password: string;
+}
+
+export class M_ProfileDTO {
+  @Expose()
+  _id: string;
+
+  @Expose()
+  login: string;
+
+  @Expose()
+  description: string;
+
+  @Expose()
+  verified: boolean;
 }
