@@ -13,6 +13,7 @@ import {
   UserInfo,
   UserInfoSchema,
 } from 'src/common/entity/profile/userInfo.schema';
+import { CacheModule } from '@nestjs/cache-manager';
 
 @Module({
   imports: [
@@ -24,11 +25,12 @@ import {
     JwtModule.registerAsync({
       useFactory: async () => {
         return {
-          secret: process.env.JWT_SECRET,
+          secret: process.env.JWT_SECRET_AUTH,
           signOptions: { expiresIn: '30d' },
         };
       },
     }),
+    CacheModule.register(),
     MailerModule,
   ],
   providers: [ProfileService],

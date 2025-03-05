@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { MailerService as NestMailerService } from '@nestjs-modules/mailer';
 
 @Injectable()
@@ -18,9 +18,8 @@ export class MailerService {
         template,
         context,
       });
-      console.log('Email sent successfully');
     } catch (error) {
-      console.error('Error sending email:', error);
+      throw new HttpException('Error sending email', HttpStatus.BAD_REQUEST);
     }
   }
 }

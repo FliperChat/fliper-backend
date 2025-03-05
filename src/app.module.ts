@@ -5,8 +5,12 @@ import { ServeStaticModule } from '@nestjs/serve-static';
 import { ConfigModule } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
 import { ProfileModule } from './modules/profile/profile.module';
-import { APP_GUARD } from '@nestjs/core';
-import { AuthGuard } from './common/guard/auth.guard';
+import {
+  AcceptLanguageResolver,
+  HeaderResolver,
+  I18nModule,
+} from 'nestjs-i18n';
+import { JwtModule } from '@nestjs/jwt';
 
 @Module({
   imports: [
@@ -23,15 +27,31 @@ import { AuthGuard } from './common/guard/auth.guard';
         uri: process.env.MONGO_URI,
       }),
     }),
+    I18nModule.forRootAsync({
+      useFactory: () => ({
+        fallbackLanguage: 'en',
+        loaderOptions: {
+          path: path.join(__dirname, './i18n/'),
+          watch: true,
+        },
+      }),
+      resolvers: [
+        new HeaderResolver(['x-custom-lang']),
+        AcceptLanguageResolver,
+      ],
+    }),
+    JwtModule.registerAsync({
+      useFactory: async () => {
+        return {
+          secret: process.env.JWT_SECRET_AUTH,
+          signOptions: { expiresIn: '30d' },
+        };
+      },
+    }),
     IpgeoModule,
     ProfileModule,
   ],
   controllers: [],
-  providers: [
-    {
-      provide: APP_GUARD,
-      useClass: AuthGuard,
-    },
-  ],
+  providers: [],
 })
 export class AppModule {}

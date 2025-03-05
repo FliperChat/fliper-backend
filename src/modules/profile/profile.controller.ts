@@ -112,7 +112,7 @@ export class ProfileController {
     return true;
   }
 
-  @Get('profile')
+  @Get('m-profile')
   @UseGuards(AuthGuard)
   @HttpCode(HttpStatus.ACCEPTED)
   async profile(@Req() req: Request) {

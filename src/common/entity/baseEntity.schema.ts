@@ -4,6 +4,6 @@ import { uuid } from 'uuidv4';
 
 @Schema()
 export class BaseEntity {
-  @Prop({ type: Types.UUID, default: uuid, unique: true })
+  @Prop({ type: Types.UUID, default: uuid })
   _id: Types.UUID;
 }

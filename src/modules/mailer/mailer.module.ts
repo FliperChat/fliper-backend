@@ -21,7 +21,7 @@ import { HandlebarsAdapter } from '@nestjs-modules/mailer/dist/adapters/handleba
           from: `"Fliper" <${process.env.MAIL_USER}>`,
         },
         template: {
-          dir: path.join(__dirname, '..', '..', 'storage', 'emailPages'),
+          dir: path.join(__dirname, '..', '..', 'emailPages'),
           adapter: new HandlebarsAdapter(),
           options: {
             strict: true,
