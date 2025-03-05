@@ -6,6 +6,8 @@ import {
   Length,
 } from 'class-validator';
 import { Expose } from 'class-transformer';
+import { Article } from '../entity/article/article.schema';
+import { Reel } from '../entity/reel/reel.schema';
 
 export class SignInDTO {
   @IsNotEmpty()
@@ -45,6 +47,17 @@ export class SignUpDTO {
   password: string;
 }
 
+export class ConfForgetPassDTO {
+  @IsNotEmpty()
+  @IsString()
+  token: string;
+
+  @IsNotEmpty()
+  @IsString()
+  @Length(8, 25)
+  password: string;
+}
+
 export class M_ProfileDTO {
   @Expose()
   _id: string;
@@ -57,4 +70,22 @@ export class M_ProfileDTO {
 
   @Expose()
   verified: boolean;
+
+  @Expose()
+  countFollowers: number;
+
+  @Expose()
+  countFollowing: number;
+
+  @Expose()
+  countArticles: number;
+
+  @Expose()
+  articles: Article[];
+
+  @Expose()
+  reels: Reel[];
+
+  @Expose()
+  favorites: (Reel | Article)[];
 }

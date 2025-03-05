@@ -7,8 +7,8 @@
   "license": "UNLICENSED",
   "scripts": {
     "build": "nest build",
-    "postbuildw": "xcopy /e /i /y storage dist\\storage",
-    "postbuildl": "cp -r storage dist/storage",
+    "postbuildw": "xcopy /e /i /y storage dist\\storage && xcopy /e /i /y emailPages dist\\storage\\emailPages",
+    "postbuildl": "cp -r storage dist/storage && cp -r emailPages dist/storage/emailPages",
     "prod": "npm run build && npm run postbuildw",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
     "start": "nest start",

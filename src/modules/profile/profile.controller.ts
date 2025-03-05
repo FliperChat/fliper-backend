@@ -5,13 +5,19 @@ import {
   HttpCode,
   HttpStatus,
   Post,
+  Put,
+  Query,
   Req,
   UploadedFile,
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
 import { ProfileService } from './profile.service';
-import { SignInDTO, SignUpDTO } from '../../common/dto/user.dto';
+import {
+  ConfForgetPassDTO,
+  SignInDTO,
+  SignUpDTO,
+} from '../../common/dto/user.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { MailerService } from '../mailer/mailer.service';
 import { Request } from 'express';
@@ -58,6 +64,52 @@ export class ProfileController {
     );
 
     return user.token;
+  }
+
+  @Post('confirm-reg')
+  @HttpCode(HttpStatus.ACCEPTED)
+  async confirmRegistration(@Query('token') token: string) {
+    const { token: tokenAuth, email } =
+      await this.profileService.confirmRegistration(token);
+
+    await this.mailerService.sendMail(
+      email,
+      'Confirm Registration',
+      'ConfirmEmail',
+      {},
+    );
+
+    return tokenAuth;
+  }
+
+  @Post('forget-password')
+  @HttpCode(HttpStatus.ACCEPTED)
+  async forgetPassword(@Query('email') email: string) {
+    const token = await this.profileService.forgetPassword(email);
+
+    await this.mailerService.sendMail(
+      email,
+      'Confirm Registration',
+      'ConfirmEmail',
+      {},
+    );
+
+    return token;
+  }
+
+  @Put('forget-password')
+  @HttpCode(HttpStatus.ACCEPTED)
+  async confirmForgetPassword(@Body() dto: ConfForgetPassDTO) {
+    const email = await this.profileService.confirmForgetPassword(dto);
+
+    await this.mailerService.sendMail(
+      email,
+      'Confirm Registration',
+      'ConfirmEmail',
+      {},
+    );
+
+    return true;
   }
 
   @Get('profile')

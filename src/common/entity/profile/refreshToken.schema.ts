@@ -1,6 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument, Types } from 'mongoose';
-import { User } from './user.schema';
 import { BaseEntity } from '../baseEntity.schema';
 
 export type RefreshTokenType = HydratedDocument<RefreshToken>;
@@ -8,7 +7,7 @@ export type RefreshTokenType = HydratedDocument<RefreshToken>;
 @Schema()
 export class RefreshToken extends BaseEntity {
   @Prop({ type: Types.UUID, ref: 'User', required: true })
-  user: User;
+  user: Types.UUID;
 
   @Prop({ required: true })
   token: string;

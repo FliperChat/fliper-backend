@@ -2,7 +2,12 @@ import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
-import { M_ProfileDTO, SignInDTO, SignUpDTO } from 'src/common/dto/user.dto';
+import {
+  ConfForgetPassDTO,
+  M_ProfileDTO,
+  SignInDTO,
+  SignUpDTO,
+} from 'src/common/dto/user.dto';
 import { User } from 'src/common/entity/profile/user.schema';
 import * as bcrypt from 'bcrypt';
 import { isEmail } from 'class-validator';
@@ -97,6 +102,81 @@ export class ProfileService {
     );
 
     return { token, _id: newUser._id, email: newUser.email };
+  }
+
+  async confirmRegistration(
+    token: string,
+  ): Promise<{ token: string; email: string }> {
+    try {
+      const payload = await this.jwtService.verifyAsync<ITokenData>(token, {
+        secret: process.env.JWT_SECRET_REG,
+      });
+
+      const user = await this.usersModel
+        .findByIdAndUpdate(payload._id, {
+          emailVerified: true,
+        })
+        .exec();
+
+      if (!user) {
+        throw new HttpException('User not found', HttpStatus.NOT_FOUND);
+      }
+
+      const tokenAuth = await this.jwtService.signAsync(
+        { email: user.email, _id: user._id },
+        {
+          secret: process.env.JWT_SECRET_AUTH,
+          expiresIn: '30d',
+        },
+      );
+
+      return { token: tokenAuth, email: user.email };
+    } catch (error) {
+      throw new HttpException(
+        'Error in user confirmation',
+        HttpStatus.NOT_ACCEPTABLE,
+      );
+    }
+  }
+
+  async forgetPassword(email: string): Promise<string> {
+    const user = await this.usersModel.findOne({ email }).exec();
+
+    if (!user || !user.emailVerified) {
+      throw new HttpException('User not found', HttpStatus.NOT_FOUND);
+    }
+
+    const token = await this.jwtService.signAsync(
+      { _id: user._id },
+      {
+        secret: process.env.JWT_SECRET_FORGET,
+        expiresIn: '1d',
+      },
+    );
+
+    return token;
+  }
+
+  async confirmForgetPassword(dto: ConfForgetPassDTO): Promise<string> {
+    try {
+      const payload = await this.jwtService.verifyAsync(dto.token, {
+        secret: process.env.JWT_SECRET_FORGET,
+      });
+
+      const hashPassword = await bcrypt.hash(dto.password, 10);
+
+      const user = await this.usersModel
+        .findByIdAndUpdate(payload._id, { password: hashPassword })
+        .exec();
+
+      if (!user || !user.emailVerified) {
+        throw new HttpException('User not found', HttpStatus.NOT_FOUND);
+      }
+
+      return user.email;
+    } catch (error) {
+      throw new HttpException('Token invalid', HttpStatus.NOT_ACCEPTABLE);
+    }
   }
 
   async deleteProfile(id: Types.UUID): Promise<boolean> {

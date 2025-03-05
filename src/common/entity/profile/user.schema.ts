@@ -1,8 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument, Types } from 'mongoose';
 import { Role } from '../../enum';
-import { UserInfo } from './userInfo.schema';
-import { RefreshToken } from './refreshToken.schema';
 import { BaseEntity } from '../baseEntity.schema';
 
 export type UserType = HydratedDocument<User>;
@@ -63,27 +61,27 @@ export class User extends BaseEntity {
   @Prop({
     type: [{ type: Types.UUID, ref: 'UserInfo', default: [] }],
   })
-  userInfo: UserInfo[];
+  userInfo: Types.UUID[];
 
   @Prop({
     type: [{ type: Types.UUID, ref: 'RefreshToken', default: [] }],
   })
-  refreshToken: RefreshToken[];
+  refreshToken: Types.UUID[];
 
   @Prop({
     type: [{ type: Types.UUID, ref: 'User' }],
     default: [],
   })
-  followers: User[];
+  followers: Types.UUID[];
 
   @Prop({
     type: [{ type: Types.UUID, ref: 'User' }],
     default: [],
   })
-  following: User[];
+  following: Types.UUID[];
 
   @Prop({ type: [{ type: Types.UUID, ref: 'Notification' }], default: [] })
-  notifications: Notification[];
+  notifications: Types.UUID[];
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);
