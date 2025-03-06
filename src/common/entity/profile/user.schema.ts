@@ -2,6 +2,7 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument, Types } from 'mongoose';
 import { Role } from '../../enum';
 import { BaseEntity } from '../baseEntity.schema';
+import { IPenalties, IWarnings } from 'src/common/types';
 
 export type UserType = HydratedDocument<User>;
 
@@ -22,9 +23,6 @@ export class User extends BaseEntity {
   })
   email: string;
 
-  @Prop({ type: Boolean, default: false, required: true })
-  emailVerified: boolean;
-
   @Prop({ required: true })
   password: string;
 
@@ -43,11 +41,14 @@ export class User extends BaseEntity {
   @Prop({ type: Date, required: true })
   birthDay: Date;
 
-  @Prop({ type: Date })
-  premiumExpires: Date;
+  @Prop({ type: Date, default: null })
+  premiumUntil: Date | null;
 
-  @Prop({ type: String, enum: Role, default: Role.USER, required: true })
-  role: Role;
+  @Prop({ type: Boolean, default: false })
+  blocked: boolean;
+
+  @Prop({ type: [String], enum: Role, default: [Role.USER] })
+  roles: string[];
 
   @Prop({ type: Boolean, default: false, required: true })
   private: boolean;
@@ -57,6 +58,18 @@ export class User extends BaseEntity {
 
   @Prop()
   description: string;
+
+  @Prop({
+    type: [Object],
+    default: [],
+  })
+  warnings: IWarnings[]; // Warnings
+
+  @Prop({
+    type: [Object],
+    default: [],
+  })
+  penalties: IPenalties[]; // Punishments
 
   @Prop({
     type: [{ type: Types.UUID, ref: 'UserInfo', default: [] }],
@@ -82,6 +95,9 @@ export class User extends BaseEntity {
 
   @Prop({ type: [{ type: Types.UUID, ref: 'Notification' }], default: [] })
   notifications: Types.UUID[];
+
+  @Prop({ type: [{ type: Types.UUID, ref: 'MessageStorage' }], default: [] })
+  chatRooms: Types.UUID[];
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);

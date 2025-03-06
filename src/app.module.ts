@@ -11,6 +11,7 @@ import {
   I18nModule,
 } from 'nestjs-i18n';
 import { JwtModule } from '@nestjs/jwt';
+import { ErrorLogModule } from './modules/errorLog/errorLog.module';
 
 @Module({
   imports: [
@@ -50,6 +51,7 @@ import { JwtModule } from '@nestjs/jwt';
     }),
     IpgeoModule,
     ProfileModule,
+    ErrorLogModule,
   ],
   controllers: [],
   providers: [],

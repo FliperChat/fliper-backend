@@ -31,6 +31,13 @@ export class ProfileService {
     private readonly i18n: I18nService,
   ) {}
 
+  /**
+   * Приватный метод для вычисления хеширования пароля.
+   *
+   * @public
+   * @param {SignInDTO} auth - Пароль для хеширования.
+   * @returns {Promise<string>} - Зашифрованный пароль.
+   */
   async login(auth: SignInDTO): Promise<string> {
     const { login, password } = auth;
 
@@ -40,7 +47,7 @@ export class ProfileService {
 
     const userNotFound = await this.i18n.t('local.errors.USER_NOT_FOUND');
 
-    if (!user || !user.emailVerified) {
+    if (!user || !user.verified) {
       throw new HttpException(userNotFound as string, HttpStatus.NOT_FOUND);
     }
 
@@ -71,7 +78,7 @@ export class ProfileService {
       .exec();
 
     if (user) {
-      if (!user.emailVerified) await this.deleteProfile(user._id);
+      if (!user.verified) await this.deleteProfile(user._id);
       else
         throw new HttpException(
           'E-mail or login is already taken',
@@ -118,7 +125,7 @@ export class ProfileService {
 
       const user = await this.usersModel
         .findByIdAndUpdate(payload._id, {
-          emailVerified: true,
+          verified: true,
         })
         .exec();
 
@@ -146,7 +153,7 @@ export class ProfileService {
   async forgetPassword(email: string): Promise<string> {
     const user = await this.usersModel.findOne({ email }).exec();
 
-    if (!user || !user.emailVerified) {
+    if (!user || !user.verified) {
       throw new HttpException('User not found', HttpStatus.NOT_FOUND);
     }
 
@@ -173,7 +180,7 @@ export class ProfileService {
         .findByIdAndUpdate(payload._id, { password: hashPassword })
         .exec();
 
-      if (!user || !user.emailVerified) {
+      if (!user || !user.verified) {
         throw new HttpException('User not found', HttpStatus.NOT_FOUND);
       }
 

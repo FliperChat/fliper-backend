@@ -9,6 +9,15 @@ export class MessageStorage extends BaseEntity {
   @Prop({ type: [{ type: Types.UUID, ref: 'User' }], default: [] })
   users: Types.UUID[];
 
+  @Prop({ default: false })
+  isGroup: boolean;
+
+  @Prop()
+  name?: string;
+
+  @Prop({ type: Types.UUID, ref: 'User' })
+  createdBy?: Types.UUID;
+
   @Prop({ type: [{ type: Types.UUID, ref: 'Message' }], default: [] })
   messages: Types.UUID[];
 }

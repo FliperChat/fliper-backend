@@ -4,7 +4,7 @@ import { BaseEntity } from '../baseEntity.schema';
 
 export type MessageType = HydratedDocument<Message>;
 
-@Schema()
+@Schema({ timestamps: true })
 export class Message extends BaseEntity {
   @Prop()
   content?: string;
@@ -12,11 +12,11 @@ export class Message extends BaseEntity {
   @Prop({ default: false })
   edited: boolean;
 
-  @Prop({ type: Date, default: Date.now, required: true })
-  dateCreated: Date;
+  @Prop({ default: false })
+  read: boolean;
 
-  @Prop({ type: [{ type: Types.UUID, ref: 'User' }], default: [] })
-  users: Types.UUID[];
+  @Prop({ type: Types.UUID, ref: 'User', required: true })
+  sender: Types.UUID;
 
   @Prop({
     type: [{ type: Types.UUID, ref: 'MessageStorage' }],
@@ -24,6 +24,7 @@ export class Message extends BaseEntity {
   messageStorage: Types.UUID;
 
   @Prop({
+    type: [String],
     default: [],
   })
   filesName?: string[];
