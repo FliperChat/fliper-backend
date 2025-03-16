@@ -9,11 +9,12 @@ async function bootstrap() {
 
   app.useGlobalPipes(new ValidationPipe());
   app.useGlobalFilters(new AllExceptionsFilter(app.get(ErrorLogService)));
-  // app.enableCors({
-  //   origin: ['http://localhost:5000', 'http://localhost:3000'],
-  //   credentials: true,
-  // });
-  app.enableCors();
+  app.enableCors({
+    origin: [process.env.SITE_URL],
+    methods: ['GET', 'POST', 'PUT', 'DELETE'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+    credentials: true,
+  });
 
   await app.listen(process.env.PORT ?? 3000);
 }

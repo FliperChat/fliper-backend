@@ -61,7 +61,7 @@ export class ProfileService {
       { email: user.email, _id: user._id },
       {
         secret: process.env.JWT_SECRET_AUTH,
-        expiresIn: '30d',
+        expiresIn: '1d',
       },
     );
 
@@ -137,7 +137,7 @@ export class ProfileService {
         { email: user.email, _id: user._id },
         {
           secret: process.env.JWT_SECRET_AUTH,
-          expiresIn: '30d',
+          expiresIn: '1d',
         },
       );
 
