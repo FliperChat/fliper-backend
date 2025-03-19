@@ -40,7 +40,7 @@ export class ProfileController {
 
   @Post('signup')
   @HttpCode(HttpStatus.ACCEPTED)
-  @UseInterceptors(FileInterceptor('imageFile'))
+  @UseInterceptors(FileInterceptor('image'))
   async register(
     @Body() auth: SignUpDTO,
     @UploadedFile() file: Express.Multer.File,
@@ -58,12 +58,15 @@ export class ProfileController {
 
     await this.mailerService.sendMail(
       user.email,
-      'Registered',
+      'Successful registration',
       'ConfirmEmail',
-      { url: 'test' },
+      {
+        url:
+          process.env.SITE_URL + '/accounts/confirm/profile?at=' + user.token,
+      },
     );
 
-    return user.token;
+    return true;
   }
 
   @Post('confirm-reg')

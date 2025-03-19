@@ -12,11 +12,11 @@ async function bootstrap() {
   app.enableCors({
     origin: [process.env.SITE_URL],
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
-    allowedHeaders: ['Content-Type', 'Authorization'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-Lang'],
     credentials: true,
   });
 
-  await app.listen(process.env.PORT ?? 3000);
+  await app.listen(process.env.PORT ?? 4200);
 }
 
 bootstrap();
