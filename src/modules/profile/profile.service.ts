@@ -19,7 +19,6 @@ import * as sharp from 'sharp';
 import { Request } from 'express';
 import { ITokenData } from 'src/common/types';
 import { plainToClass } from 'class-transformer';
-import { I18nService } from 'nestjs-i18n';
 import { Cache } from '@nestjs/cache-manager';
 
 @Injectable()
@@ -28,7 +27,6 @@ export class ProfileService {
     @InjectModel(User.name) private usersModel: Model<User>,
     private readonly jwtService: JwtService,
     private cacheManager: Cache,
-    private readonly i18n: I18nService,
   ) {}
 
   /**
@@ -45,16 +43,14 @@ export class ProfileService {
       ? await this.usersModel.findOne({ email: login }).exec()
       : await this.usersModel.findOne({ login }).exec();
 
-    const userNotFound = await this.i18n.t('local.errors.USER_NOT_FOUND');
-
     if (!user || !user.verified) {
-      throw new HttpException(userNotFound as string, HttpStatus.NOT_FOUND);
+      throw new HttpException('User not found', HttpStatus.NOT_FOUND);
     }
 
     const isAuth = await bcrypt.compare(password, user.password);
 
     if (!isAuth) {
-      throw new HttpException(userNotFound as string, HttpStatus.NOT_FOUND);
+      throw new HttpException('User not found', HttpStatus.NOT_FOUND);
     }
 
     const token = await this.jwtService.signAsync(

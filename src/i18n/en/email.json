@@ -1,0 +1,23 @@
+{
+  "confirm_email": {
+    "title": "Successful registration",
+    "text0": "Hello there!",
+    "text1": "Thank you for joining Flip!",
+    "text2": "Please take a second to confirm your email address:",
+    "btn1": "Confirm your email address",
+    "text3": "If the button above does not work, simply copy the link below and paste it into your browser:",
+    "text4_1": "If you cannot verify your email address, just send us an email to ",
+    "text4_2": ", and we will be happy to help.",
+    "text5": "Do you have more questions?",
+    "btn2": "Help center",
+    "text6": "If you still have questions, please send us an email at",
+    "text7": "Our customer support team will help you from Monday to Friday from 7:00 to 16:00 (GMT)",
+    "text8": "Thank you for choosing us!",
+    "text9": "The Flip team"
+  },
+  "confirm_email_thx": {},
+  "change_email": {},
+  "change_email_thx": {},
+  "recover_pass": {},
+  "recover_pass_thx": {}
+}

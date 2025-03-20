@@ -2,12 +2,14 @@ import { Module } from '@nestjs/common';
 import { IpgeoModule } from './modules/ipgeo/ipgeo.module';
 import * as path from 'path';
 import { ServeStaticModule } from '@nestjs/serve-static';
-import { ConfigModule } from '@nestjs/config';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
 import { ProfileModule } from './modules/profile/profile.module';
 import {
   AcceptLanguageResolver,
+  CookieResolver,
   HeaderResolver,
+  I18nJsonLoader,
   I18nModule,
 } from 'nestjs-i18n';
 import { JwtModule } from '@nestjs/jwt';
@@ -36,8 +38,10 @@ import { ErrorLogModule } from './modules/errorLog/errorLog.module';
           watch: true,
         },
       }),
+      loader: I18nJsonLoader,
       resolvers: [
-        new HeaderResolver(['x-custom-lang']),
+        new HeaderResolver(['X-Lang']),
+        new CookieResolver(),
         AcceptLanguageResolver,
       ],
     }),

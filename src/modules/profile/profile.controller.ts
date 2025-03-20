@@ -22,6 +22,7 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { MailerService } from '../mailer/mailer.service';
 import { Request } from 'express';
 import { AuthGuard } from 'src/common/guard/auth.guard';
+import { I18n, I18nContext } from 'nestjs-i18n';
 
 @Controller('profile')
 export class ProfileController {
@@ -44,6 +45,7 @@ export class ProfileController {
   async register(
     @Body() auth: SignUpDTO,
     @UploadedFile() file: Express.Multer.File,
+    @I18n() i18n: I18nContext,
   ) {
     const user = await this.profileService.register(auth);
 
@@ -58,11 +60,25 @@ export class ProfileController {
 
     await this.mailerService.sendMail(
       user.email,
-      'Successful registration',
+      i18n.t('email.confirm_email.title'),
       'ConfirmEmail',
       {
         url:
           process.env.SITE_URL + '/accounts/confirm/profile?at=' + user.token,
+        email: process.env.MAIL_SUPPORT,
+        btn1: i18n.t('email.confirm_email.btn1'),
+        btn2: i18n.t('email.confirm_email.btn2'),
+        text0: i18n.t('email.confirm_email.text0'),
+        text1: i18n.t('email.confirm_email.text1'),
+        text2: i18n.t('email.confirm_email.text2'),
+        text3: i18n.t('email.confirm_email.text3'),
+        text4_1: i18n.t('email.confirm_email.text4_1'),
+        text4_2: i18n.t('email.confirm_email.text4_2'),
+        text5: i18n.t('email.confirm_email.text5'),
+        text6: i18n.t('email.confirm_email.text6'),
+        text7: i18n.t('email.confirm_email.text7'),
+        text8: i18n.t('email.confirm_email.text8'),
+        text9: i18n.t('email.confirm_email.text9'),
       },
     );
 
