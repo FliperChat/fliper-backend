@@ -10,7 +10,6 @@ import {
 } from 'src/common/dto/user.dto';
 import { User } from 'src/common/entity/profile/user.schema';
 import * as bcrypt from 'bcrypt';
-import { isEmail } from 'class-validator';
 import * as moment from 'moment';
 import * as path from 'path';
 import { v4 as uuidv4 } from 'uuid';
@@ -39,9 +38,11 @@ export class ProfileService {
   async login(auth: SignInDTO): Promise<string> {
     const { login, password } = auth;
 
-    const user = isEmail(login)
-      ? await this.usersModel.findOne({ email: login }).exec()
-      : await this.usersModel.findOne({ login }).exec();
+    const user = await this.usersModel
+      .findOne({
+        $or: [{ email: login }, { login: login }],
+      })
+      .exec();
 
     if (!user || !user.verified) {
       throw new HttpException('User not found', HttpStatus.NOT_FOUND);
@@ -67,53 +68,61 @@ export class ProfileService {
   async register(
     reg: SignUpDTO,
   ): Promise<{ token: string; _id: Types.UUID; email: string }> {
-    const user = await this.usersModel
-      .findOne({
-        $or: [{ email: reg.email }, { login: reg.login }],
-      })
-      .exec();
+    try {
+      const user = await this.usersModel
+        .findOne({
+          $or: [{ email: reg.email }, { login: reg.login }],
+        })
+        .exec();
 
-    if (user) {
-      if (!user.verified) await this.deleteProfile(user._id);
-      else
+      if (user) {
+        if (!user.verified) await this.deleteProfile(user._id);
+        else {
+          const field = user.email === reg.email ? 'E-mail' : 'Login';
+
+          throw new HttpException(
+            { message: `${field} is already taken`, field },
+            HttpStatus.CONFLICT,
+          );
+        }
+      }
+
+      const birthDate = moment(reg.birthDay, 'YYYY-MM-DD');
+      const age = moment().diff(birthDate, 'years');
+
+      if (age < 18) {
         throw new HttpException(
-          'E-mail or login is already taken',
+          'You must be at least 18 years old to register',
           HttpStatus.NOT_ACCEPTABLE,
         );
-    }
+      }
 
-    const birthDate = moment(reg.birthDay, 'YYYY-MM-DD');
-    const age = moment().diff(birthDate, 'years');
+      const hashPassword = await bcrypt.hash(reg.password, 10);
 
-    if (age < 18) {
+      const newUser = await this.usersModel.create({
+        ...reg,
+        password: hashPassword,
+        birthDay: birthDate.toDate(),
+      });
+
+      const token = await this.jwtService.signAsync(
+        { _id: newUser._id },
+        {
+          secret: process.env.JWT_SECRET_REG,
+          expiresIn: '1d',
+        },
+      );
+
+      return { token, _id: newUser._id, email: newUser.email };
+    } catch (error) {
       throw new HttpException(
-        'You must be at least 18 years old to register',
-        HttpStatus.BAD_REQUEST,
+        'Error during user registration',
+        HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
-
-    const hashPassword = await bcrypt.hash(reg.password, 10);
-
-    const newUser = await this.usersModel.create({
-      ...reg,
-      password: hashPassword,
-      birthDay: birthDate.toDate(),
-    });
-
-    const token = await this.jwtService.signAsync(
-      { _id: newUser._id },
-      {
-        secret: process.env.JWT_SECRET_REG,
-        expiresIn: '1d',
-      },
-    );
-
-    return { token, _id: newUser._id, email: newUser.email };
   }
 
-  async confirmRegistration(
-    token: string,
-  ): Promise<{ token: string; email: string }> {
+  async confirmRegistration(token: string): Promise<string> {
     try {
       const payload = await this.jwtService.verifyAsync<ITokenData>(token, {
         secret: process.env.JWT_SECRET_REG,
@@ -129,19 +138,11 @@ export class ProfileService {
         throw new HttpException('User not found', HttpStatus.NOT_FOUND);
       }
 
-      const tokenAuth = await this.jwtService.signAsync(
-        { email: user.email, _id: user._id },
-        {
-          secret: process.env.JWT_SECRET_AUTH,
-          expiresIn: '1d',
-        },
-      );
-
-      return { token: tokenAuth, email: user.email };
+      return user.email;
     } catch (error) {
       throw new HttpException(
-        'Error in user confirmation',
-        HttpStatus.NOT_ACCEPTABLE,
+        'Error during user confirmation',
+        HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
   }
@@ -188,7 +189,9 @@ export class ProfileService {
 
   async deleteProfile(id: Types.UUID): Promise<boolean> {
     try {
-      await this.usersModel.findByIdAndDelete(id);
+      const res = await this.usersModel.findByIdAndDelete(id);
+      this.deleteImage(res as User);
+      res?._id;
       return true;
     } catch (error) {
       throw new HttpException(
@@ -237,6 +240,21 @@ export class ProfileService {
       });
 
     return newFileName;
+  }
+
+  async deleteImage(user: User) {
+    const filePath = path.join(
+      __dirname,
+      '..',
+      '..',
+      'resources',
+      'avatars',
+      user.image,
+    );
+
+    if (!fs.existsSync(filePath)) return;
+
+    await fs.promises.rm(filePath);
   }
 
   async profile(req: Request) {

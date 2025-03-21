@@ -23,6 +23,8 @@ import { MailerService } from '../mailer/mailer.service';
 import { Request } from 'express';
 import { AuthGuard } from 'src/common/guard/auth.guard';
 import { I18n, I18nContext } from 'nestjs-i18n';
+import { readFileSync } from 'fs';
+import { join } from 'path';
 
 @Controller('profile')
 export class ProfileController {
@@ -63,8 +65,9 @@ export class ProfileController {
       i18n.t('email.confirm_email.title'),
       'ConfirmEmail',
       {
-        url:
-          process.env.SITE_URL + '/accounts/confirm/profile?at=' + user.token,
+        url0: process.env.SITE_URL,
+        url1: process.env.SITE_URL + '/accounts/confirm?at=' + user.token,
+        url2: process.env.SITE_URL + '/support',
         email: process.env.MAIL_SUPPORT,
         btn1: i18n.t('email.confirm_email.btn1'),
         btn2: i18n.t('email.confirm_email.btn2'),
@@ -87,18 +90,32 @@ export class ProfileController {
 
   @Post('confirm-reg')
   @HttpCode(HttpStatus.ACCEPTED)
-  async confirmRegistration(@Query('token') token: string) {
-    const { token: tokenAuth, email } =
-      await this.profileService.confirmRegistration(token);
+  async confirmRegistration(
+    @Query('at') at: string,
+    @I18n() i18n: I18nContext,
+  ) {
+    const email = await this.profileService.confirmRegistration(at);
 
     await this.mailerService.sendMail(
       email,
-      'Confirm Registration',
-      'ConfirmEmail',
-      {},
+      i18n.t('email.confirm_email_thx.title'),
+      'ConfirmEmailTHX',
+      {
+        url0: process.env.SITE_URL,
+        url1: process.env.SITE_URL + '/support',
+        email,
+        btn1: i18n.t('email.confirm_email_thx.btn1'),
+        text0: i18n.t('email.confirm_email_thx.text0'),
+        text1: i18n.t('email.confirm_email_thx.text1'),
+        text2: i18n.t('email.confirm_email_thx.text2'),
+        text3: i18n.t('email.confirm_email_thx.text3'),
+        text4: i18n.t('email.confirm_email_thx.text4'),
+        text5: i18n.t('email.confirm_email_thx.text5'),
+        text6: i18n.t('email.confirm_email_thx.text6'),
+      },
     );
 
-    return tokenAuth;
+    return true;
   }
 
   @Post('forget-password')

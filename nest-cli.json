@@ -7,6 +7,10 @@
     "assets": [
       { "include": "i18n/**/*", "watchAssets": true },
       {
+        "include": "assets/**/*",
+        "watchAssets": true
+      },
+      {
         "include": "../storage/**/*",
         "watchAssets": true,
         "outDir": "dist/storage"

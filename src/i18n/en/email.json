@@ -15,7 +15,17 @@
     "text8": "Thank you for choosing us!",
     "text9": "The Flip team"
   },
-  "confirm_email_thx": {},
+  "confirm_email_thx": {
+    "title": "Email confirmed",
+    "text0": "Hello there!",
+    "text1": "You have successfully verified your email",
+    "text2": "Do you have more questions?",
+    "btn1": "Help center",
+    "text3": "If you still have questions, please send us an email at",
+    "text4": "Our customer support team will help you from Monday to Friday from 7:00 to 16:00 (GMT)",
+    "text5": "Thank you for choosing us!",
+    "text6": "The Flip team"
+  },
   "change_email": {},
   "change_email_thx": {},
   "recover_pass": {},

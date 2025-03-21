@@ -1,5 +1,6 @@
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable, Logger } from '@nestjs/common';
 import { MailerService as NestMailerService } from '@nestjs-modules/mailer';
+import { join } from 'path';
 
 @Injectable()
 export class MailerService {
@@ -17,9 +18,25 @@ export class MailerService {
         subject,
         template,
         context,
+        attachments: [
+          {
+            path: join(__dirname, '..', '..', 'assets', 'images', 'banner.png'),
+            cid: 'banner',
+            contentDisposition: 'inline',
+            contentType: 'image/png',
+            filename: 'banner.png',
+            headers: {
+              'Content-Transfer-Encoding': 'base64',
+              'Content-Disposition': 'inline',
+            },
+          },
+        ],
       });
     } catch (error) {
-      throw new HttpException('Error sending email', HttpStatus.BAD_REQUEST);
+      throw new HttpException(
+        'Error sending email',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
     }
   }
 }
