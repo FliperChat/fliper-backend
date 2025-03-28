@@ -1,4 +1,4 @@
-import { HttpException, HttpStatus, Injectable, Logger } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { MailerService as NestMailerService } from '@nestjs-modules/mailer';
 import { join } from 'path';
 
@@ -6,6 +6,15 @@ import { join } from 'path';
 export class MailerService {
   constructor(private readonly mailerService: NestMailerService) {}
 
+  /**
+   * Sending a message for a user to mail by template
+   *
+   * @public
+   * @param {string} to - Send to.
+   * @param {string} subject - Message Subject.
+   * @param {string} template - The name of the page template.
+   * @param {[name: string]: any} context - Parameters to put in the letter on the template.
+   */
   async sendMail(
     to: string,
     subject: string,

@@ -6,7 +6,7 @@ import { BaseEntity } from '../baseEntity.schema';
 
 export type UserInfoType = HydratedDocument<UserInfo>;
 
-@Schema()
+@Schema({ timestamps: true })
 export class UserInfo extends BaseEntity {
   @Prop({ type: Types.UUID, ref: 'User', required: true })
   user: Types.UUID;
@@ -17,8 +17,8 @@ export class UserInfo extends BaseEntity {
   @Prop({ type: Object, required: true })
   device: IResult;
 
-  @Prop({ type: Date, default: Date.now, required: true })
-  updatedAt: Date;
+  @Prop({ required: true })
+  ip: string;
 }
 
 export const UserInfoSchema = SchemaFactory.createForClass(UserInfo);

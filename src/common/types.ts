@@ -65,6 +65,7 @@ export interface IWarnings {
 export interface IErrorLog extends Document {
   actionType: string; // Type of action (e.g., "suspicious login", "failed payment")
   description: string; // Detailed description of the error or suspicious activity
+  message: string; // Detailed message of the error or suspicious activity
   userId?: Types.UUID; // Optional reference to the user who triggered the event
   severity: ErrorSeverity; // Severity of the issue
 }

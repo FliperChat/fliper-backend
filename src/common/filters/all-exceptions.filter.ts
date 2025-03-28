@@ -32,6 +32,7 @@ export class AllExceptionsFilter implements ExceptionFilter {
       await this.errorLogService.logError({
         actionType: 'server_error',
         description: description,
+        message: (exception as any).response.error,
         userId: userId,
         severity: ErrorSeverity.HIGH,
       } as IErrorLog);

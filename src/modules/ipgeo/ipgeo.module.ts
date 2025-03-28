@@ -6,5 +6,6 @@ import { IpgeoController } from './ipgeo.controller';
   imports: [],
   providers: [IpgeoService],
   controllers: [IpgeoController],
+  exports: [IpgeoService],
 })
 export class IpgeoModule {}

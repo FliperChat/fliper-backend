@@ -13,7 +13,13 @@ export class IpgeoService {
     this.loadDatabase(dbPath);
   }
 
-  async loadDatabase(dbPath: string) {
+  /**
+   * Method of data retrieval from the database
+   *
+   * @private
+   * @param {string} dbPath - Path to the location base.
+   */
+  private async loadDatabase(dbPath: string) {
     try {
       this.geoDb = await open(dbPath);
     } catch (error) {
@@ -21,6 +27,13 @@ export class IpgeoService {
     }
   }
 
+  /**
+   * Getting user's IP
+   *
+   * @public
+   * @param {Request} req - Request data.
+   * @returns {string} - User Ip.
+   */
   getIp(req: Request): string {
     const ip =
       req.headers['x-forwarded-for']?.toString().split(',')[0] ||
@@ -31,12 +44,26 @@ export class IpgeoService {
     return ip || 'x.x.x.x';
   }
 
+  /**
+   * Getting user agent of user from browser
+   *
+   * @public
+   * @param {Request} req - Request data.
+   * @returns {string} - User agent of the user.
+   */
   getUA(req: Request): string {
     const ua = req.headers['user-agent'];
 
     return ua || '';
   }
 
+  /**
+   * Retrieving browser and user system data from the browser
+   *
+   * @public
+   * @param {string} userAgent - User agent of the user.
+   * @returns {IResult} - Browser and system data.
+   */
   getDevice(userAgent: string): IResult {
     userAgent = userAgent.toLowerCase();
     const parser = new UAParser(userAgent);
@@ -44,6 +71,13 @@ export class IpgeoService {
     return parser.getResult();
   }
 
+  /**
+   * Obtaining user geolocation data
+   *
+   * @public
+   * @param {string} ip - User Ip.
+   * @returns {CityResponse} - Geolocation data.
+   */
   getLocation(ip: string): CityResponse {
     if (!this.geoDb) {
       throw new HttpException(
@@ -59,5 +93,21 @@ export class IpgeoService {
     } catch (error) {
       throw new HttpException('Unable to locate', HttpStatus.NOT_FOUND);
     }
+  }
+
+  /**
+   * Retrieving all possible user data
+   *
+   * @public
+   * @param {Request} req - Request data.
+   * @returns {Object} - User Data.
+   */
+  getFullData(req: Request) {
+    const ua = this.getUA(req);
+    const ip = this.getIp(req);
+    const device = this.getDevice(ua);
+    const location = this.getLocation(ip);
+
+    return { ip, device, location, ua };
   }
 }

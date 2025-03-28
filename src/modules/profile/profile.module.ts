@@ -6,20 +6,17 @@ import { User, UserSchema } from 'src/common/entity/profile/user.schema';
 import { JwtModule } from '@nestjs/jwt';
 import { MailerModule } from '../mailer/mailer.module';
 import {
-  RefreshToken,
-  RefreshTokenSchema,
-} from 'src/common/entity/profile/refreshToken.schema';
-import {
   UserInfo,
   UserInfoSchema,
 } from 'src/common/entity/profile/userInfo.schema';
 import { CacheModule } from '@nestjs/cache-manager';
+import { JwtAuthModule } from '../jwt/jwt.module';
+import { IpgeoModule } from '../ipgeo/ipgeo.module';
 
 @Module({
   imports: [
     MongooseModule.forFeature([
       { name: User.name, schema: UserSchema },
-      { name: RefreshToken.name, schema: RefreshTokenSchema },
       { name: UserInfo.name, schema: UserInfoSchema },
     ]),
     JwtModule.registerAsync({
@@ -31,7 +28,9 @@ import { CacheModule } from '@nestjs/cache-manager';
       },
     }),
     CacheModule.register(),
+    JwtAuthModule,
     MailerModule,
+    IpgeoModule,
   ],
   providers: [ProfileService],
   controllers: [ProfileController],

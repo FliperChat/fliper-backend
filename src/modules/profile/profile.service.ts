@@ -19,52 +19,85 @@ import { Request } from 'express';
 import { ITokenData } from 'src/common/types';
 import { plainToClass } from 'class-transformer';
 import { Cache } from '@nestjs/cache-manager';
+import { JwtAuthService } from '../jwt/jwt.service';
+import { IpgeoService } from '../ipgeo/ipgeo.service';
+import { UserInfo } from 'src/common/entity/profile/userInfo.schema';
 
 @Injectable()
 export class ProfileService {
   constructor(
     @InjectModel(User.name) private usersModel: Model<User>,
+    @InjectModel(UserInfo.name) private userInfoModel: Model<UserInfo>,
     private readonly jwtService: JwtService,
+    private readonly jwtAuthService: JwtAuthService,
+    private readonly ipgeoService: IpgeoService,
     private cacheManager: Cache,
   ) {}
 
   /**
-   * Приватный метод для вычисления хеширования пароля.
+   * Method for user authorization
    *
    * @public
-   * @param {SignInDTO} auth - Пароль для хеширования.
-   * @returns {Promise<string>} - Зашифрованный пароль.
+   * @param {SignInDTO} auth - Login and password.
+   * @returns {Promise<{accessToken: string; refreshToken: string;}>} - Authorization tokens.
    */
-  async login(auth: SignInDTO): Promise<string> {
-    const { login, password } = auth;
+  async login(
+    auth: SignInDTO,
+    req: Request,
+  ): Promise<{
+    accessToken: string;
+    refreshToken: string;
+  }> {
+    try {
+      const { login, password } = auth;
 
-    const user = await this.usersModel
-      .findOne({
-        $or: [{ email: login }, { login: login }],
-      })
-      .exec();
+      const user = await this.usersModel
+        .findOne({
+          $or: [{ email: login }, { login: login }],
+        })
+        .exec();
 
-    if (!user || !user.verified) {
-      throw new HttpException('User not found', HttpStatus.NOT_FOUND);
+      if (!user || !user.verified) {
+        throw new HttpException('User not found', HttpStatus.NOT_FOUND);
+      }
+
+      const isAuth = await bcrypt.compare(password, user.password);
+
+      if (!isAuth) {
+        throw new HttpException('User not found', HttpStatus.NOT_FOUND);
+      }
+
+      const userInfo = this.ipgeoService.getFullData(req);
+
+      const existingSession = await this.userInfoModel.findOne({
+        user: user.id,
+        ip: userInfo.ip,
+        'device.ua': userInfo.ua,
+      });
+
+      if (!existingSession) {
+        await this.userInfoModel.create({ user: user.id, ...userInfo });
+      }
+
+      return await this.jwtAuthService.generateTokens(user);
+    } catch (error) {
+      throw new HttpException(
+        {
+          message: 'Error during user login',
+          error: error,
+        },
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
     }
-
-    const isAuth = await bcrypt.compare(password, user.password);
-
-    if (!isAuth) {
-      throw new HttpException('User not found', HttpStatus.NOT_FOUND);
-    }
-
-    const token = await this.jwtService.signAsync(
-      { email: user.email, _id: user._id },
-      {
-        secret: process.env.JWT_SECRET_AUTH,
-        expiresIn: '1d',
-      },
-    );
-
-    return token;
   }
 
+  /**
+   * Method for user registration
+   *
+   * @public
+   * @param {SignUpDTO} reg - Registration details.
+   * @returns {Promise<{ token: string; _id: Types.UUID; email: string }>} - Data for continued registration.
+   */
   async register(
     reg: SignUpDTO,
   ): Promise<{ token: string; _id: Types.UUID; email: string }> {
@@ -122,6 +155,13 @@ export class ProfileService {
     }
   }
 
+  /**
+   * Method for confirming registration
+   *
+   * @public
+   * @param {string} token - Registration token.
+   * @returns {Promise<string>} - User mail.
+   */
   async confirmRegistration(token: string): Promise<string> {
     try {
       const payload = await this.jwtService.verifyAsync<ITokenData>(token, {
@@ -147,6 +187,13 @@ export class ProfileService {
     }
   }
 
+  /**
+   * Password recovery request by mail
+   *
+   * @public
+   * @param {string} email - User mail.
+   * @returns {Promise<string>} - Password recovery token.
+   */
   async forgetPassword(email: string): Promise<string> {
     const user = await this.usersModel.findOne({ email }).exec();
 
@@ -165,6 +212,13 @@ export class ProfileService {
     return token;
   }
 
+  /**
+   * Change the password from a forgotten password to a new password
+   *
+   * @public
+   * @param {ConfForgetPassDTO} dto - New password and recovery token.
+   * @returns {Promise<string>} - User mail.
+   */
   async confirmForgetPassword(dto: ConfForgetPassDTO): Promise<string> {
     try {
       const payload = await this.jwtService.verifyAsync(dto.token, {
@@ -187,6 +241,12 @@ export class ProfileService {
     }
   }
 
+  /**
+   * Method for deleting a user
+   *
+   * @public
+   * @param {Types.UUID} id - User ID.
+   */
   async deleteProfile(id: Types.UUID): Promise<boolean> {
     try {
       const res = await this.usersModel.findByIdAndDelete(id);
@@ -201,6 +261,13 @@ export class ProfileService {
     }
   }
 
+  /**
+   * Method for changing the user's photo
+   *
+   * @public
+   * @param {Types.UUID} id - User ID.
+   * @param {string} fileName - Photo Title.
+   */
   async updateUserImg(id: Types.UUID, fileName: string) {
     const user = await this.usersModel.findOne({
       _id: id,
@@ -215,6 +282,14 @@ export class ProfileService {
     await user.save();
   }
 
+  /**
+   * Method for saving the user's photo
+   *
+   * @public
+   * @param {string} userId - User ID.
+   * @param {Express.Multer.File} file - File.
+   * @returns {Promise<string>} - Picture Name.
+   */
   async saveImage(file: Express.Multer.File, userId: string): Promise<string> {
     const newFileName = `${uuidv4()}.jpeg`;
     const filePath = path.join(
@@ -242,6 +317,12 @@ export class ProfileService {
     return newFileName;
   }
 
+  /**
+   * Method for deleting a user's photo
+   *
+   * @public
+   * @param {User} user - User.
+   */
   async deleteImage(user: User) {
     const filePath = path.join(
       __dirname,
@@ -257,6 +338,13 @@ export class ProfileService {
     await fs.promises.rm(filePath);
   }
 
+  /**
+   * User data output
+   *
+   * @public
+   * @param {Request} req - Request data.
+   * @returns {Promise<User | M_ProfileDTO>} - User Data.
+   */
   async profile(req: Request) {
     const tokenData = req.tokenData as ITokenData;
 

@@ -13,11 +13,11 @@ export class ErrorLog extends BaseEntity {
   @Prop({ required: true })
   description: string;
 
+  @Prop({ required: true })
+  message: string;
+
   @Prop({ required: false, type: Types.UUID, ref: 'User' })
   userId: Types.UUID;
-
-  @Prop({ type: Date, default: Date.now })
-  createdAt: string;
 
   @Prop({ type: String, enum: ErrorSeverity, default: ErrorSeverity.LOW })
   severity: ErrorSeverity;

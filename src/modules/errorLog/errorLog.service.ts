@@ -4,9 +4,6 @@ import { Model } from 'mongoose';
 import { ErrorLog } from 'src/common/entity/support/errorLog.schema';
 import { IErrorLog } from 'src/common/types';
 
-/**
- * Service for logging errors and suspicious activities.
- */
 @Injectable()
 export class ErrorLogService {
   constructor(

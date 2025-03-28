@@ -23,8 +23,6 @@ import { MailerService } from '../mailer/mailer.service';
 import { Request } from 'express';
 import { AuthGuard } from 'src/common/guard/auth.guard';
 import { I18n, I18nContext } from 'nestjs-i18n';
-import { readFileSync } from 'fs';
-import { join } from 'path';
 
 @Controller('profile')
 export class ProfileController {
@@ -35,10 +33,10 @@ export class ProfileController {
 
   @Post('signin')
   @HttpCode(HttpStatus.ACCEPTED)
-  async login(@Body() auth: SignInDTO) {
-    const token = await this.profileService.login(auth);
+  async login(@Body() auth: SignInDTO, @Req() req: Request) {
+    const tokens = await this.profileService.login(auth, req);
 
-    return token;
+    return tokens;
   }
 
   @Post('signup')
